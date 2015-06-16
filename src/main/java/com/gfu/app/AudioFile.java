@@ -7,9 +7,6 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * Created by Gary on 6/15/2015.
- */
 public class AudioFile {
     private static File file;
 
@@ -26,7 +23,7 @@ public class AudioFile {
         baseFormat = baseInputStream.getFormat();
         decodedFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
                 baseFormat.getSampleRate(),
-                baseFormat.getFrameSize() * 8,
+                baseFormat.getSampleSizeInBits(),
                 baseFormat.getChannels(),
                 baseFormat.getChannels() * baseFormat.getFrameSize(),
                 baseFormat.getSampleRate(),

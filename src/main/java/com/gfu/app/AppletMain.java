@@ -26,6 +26,6 @@ public class AppletMain extends Applet implements Runnable {
 
     @Override
     public void paint(Graphics g) {
-
+        update(g);
     }
 }
