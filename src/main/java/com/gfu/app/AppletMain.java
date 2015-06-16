@@ -1,4 +1,4 @@
-package com.fu.gary;
+package com.gfu.app;
 
 import java.applet.Applet;
 import java.awt.Graphics;
@@ -15,7 +15,6 @@ public class AppletMain extends Applet implements Runnable {
 
     }
 
-    @Override
     public void run() {
 
     }

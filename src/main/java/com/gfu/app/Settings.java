@@ -1,4 +1,4 @@
-package com.fu.gary;
+package com.gfu.app;
 
 public class Settings {
     // Global / Applet

@@ -1,4 +1,4 @@
-package com.fu.gary;
+package com.gfu.app;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;

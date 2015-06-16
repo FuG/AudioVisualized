@@ -1,4 +1,4 @@
-package com.fu.gary;
+package com.gfu.app;
 
 public abstract class FrameProcessable {
     public int x, y;
