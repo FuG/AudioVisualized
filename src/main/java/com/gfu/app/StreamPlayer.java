@@ -6,6 +6,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 
 public class StreamPlayer implements Runnable {
@@ -23,7 +24,7 @@ public class StreamPlayer implements Runnable {
         }
     }
 
-    public void play() throws LineUnavailableException, IOException {
+    public void play() throws LineUnavailableException, IOException, UnsupportedAudioFileException {
         AudioInputStream din = audioFile.getBaseInputStream();
         byte[] data = new byte[4096];
         SourceDataLine line = getLine(audioFile.getBaseFormat());

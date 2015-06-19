@@ -12,7 +12,7 @@ public class Visualizer {
     Graphics backGraphics;
 
     public Visualizer(Image backBuffer) {
-        visuals = new ArrayList<VisualCollection>();
+        visuals = new ArrayList<>();
 
         this.backBuffer = backBuffer;
         backGraphics = backBuffer.getGraphics();
@@ -24,7 +24,7 @@ public class Visualizer {
     private void initRenderHints(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
 
-        Map<RenderingHints.Key, Object> renderingHintsMap = new HashMap<RenderingHints.Key, Object>();
+        Map<RenderingHints.Key, Object> renderingHintsMap = new HashMap<>();
         renderingHintsMap.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         renderingHintsMap.put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         renderingHintsMap.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);

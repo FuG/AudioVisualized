@@ -27,7 +27,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="AudioVisualized" target="1.5" />
+      <module name="AudioVisualized" target="1.7" />
     </bytecodeTargetLevel>
   </component>
 </project>
