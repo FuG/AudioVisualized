@@ -24,7 +24,7 @@ public class AudioFile {
 
         init();
         loadByteBuffer();
-        loadDoubleBuffer();
+        loadNormalizedDoubleBuffer();
     }
 
     private void init() throws IOException, UnsupportedAudioFileException {
@@ -48,10 +48,16 @@ public class AudioFile {
         byteBuffer = out.toByteArray();
     }
 
-    private void loadDoubleBuffer() { // currently only works for single channel audio
-        int frameSize = baseFormat.getFrameSize();
+    private void loadNormalizedDoubleBuffer() {
+        int sampleSizeInBytes = baseFormat.getSampleSizeInBits() / 8;
+        int frameSize = baseFormat.getFrameSize();// currently only works for single channel audio
 
+        doubleBuffer = new double[byteBuffer.length / sampleSizeInBytes];
+
+        int dBufferIndex = 0;
         for (int i = 0; i < byteBuffer.length; i += frameSize) {
+            // TODO: add multi-channel support
+
             if (i > 100000 && i < 101000) { // TODO: clean this shit up
                 System.out.println();
             }
@@ -64,43 +70,69 @@ public class AudioFile {
                     System.out.println("Byte[" + j + "]: " + tempBuffer[j]);
                 }
             }
-            int val = 0;
-            if (i > 100000 && i < 101000) {
-                val = ((tempBuffer[0] & 0xff) << 8) | (tempBuffer[1] & 0xff);
-//                System.out.println("Int Val: " + val);
-            }
             // pad with 0s
             for ( ; j < 8; j++) {
                 tempBuffer[j] = 0;
             }
+            // normalize the double value and store it
+            boolean isSigned = baseFormat.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED) ? true : false;
+            doubleBuffer[dBufferIndex++] = getNormalizedFloat64(tempBuffer, sampleSizeInBytes, isSigned);
 
             if (i > 100000 && i < 101000) {
-                System.out.println("Double Val: " + getFloat64(tempBuffer, frameSize));
+                System.out.println("Double Val: " + doubleBuffer[dBufferIndex - 1]);
             }
         }
 
         System.out.println("done!");
     }
 
-    private static double getFloat64(byte[] bytes, int byteRate) {
-        double value = 0;
+    private static double getNormalizedFloat64(byte[] bytes, int sampleSizeInBytes, boolean signed) {
+        double baseValue, normalizedValue = 0;
+        // TODO: fix unsigned/signed bit parsing
 
-        switch (byteRate) {
-            case 1:
-                value = (double) bytes[0];
+        switch (sampleSizeInBytes) {
+            case 1: // always unsigned
+                normalizedValue = (double) bytes[0] / 255;
                 break;
             case 2:
-                value = (double)(((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff));
+                baseValue = (double)(((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff));
+                if (signed) {
+                    if (baseValue < 0) {
+                        normalizedValue = baseValue / 32768;
+                    } else {
+                        normalizedValue = baseValue / 32767;
+                    }
+                } else {
+                    normalizedValue = baseValue / 65536;
+                }
                 break;
             case 3:
-                value = (double)(((bytes[0] & 0xff) << 16) | ((bytes[1] & 0xff) << 8) | (bytes[2] & 0xff));
+                baseValue = (double)(((bytes[0] & 0xff) << 16) | ((bytes[1] & 0xff) << 8) | (bytes[2] & 0xff));
+                if (signed) {
+                    if (baseValue < 0) {
+                        normalizedValue = baseValue / 8388608;
+                    } else {
+                        normalizedValue = baseValue / 8388607;
+                    }
+                } else {
+                    normalizedValue = baseValue / 16777215;
+                }
                 break;
             case 4:
-                value = (double)(((bytes[0] & 0xff) << 24) | ((bytes[1] & 0xff) << 16) | ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff));
+                baseValue = (double)(((bytes[0] & 0xff) << 24) | ((bytes[1] & 0xff) << 16) | ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff));
+                if (signed) {
+                    if (baseValue < 0) {
+                        normalizedValue = baseValue / 2147423648;
+                    } else {
+                        normalizedValue = baseValue / 2147423647;
+                    }
+                } else {
+                    normalizedValue = baseValue / 2147423647 / 2;
+                }
                 break;
         }
 
-        return value;
+        return normalizedValue;
     }
 
     public AudioInputStream getBaseInputStream() throws IOException, UnsupportedAudioFileException {
