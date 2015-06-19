@@ -8,7 +8,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.io.IOException;
 
-public class StreamPlayer {
+public class StreamPlayer implements Runnable {
     AudioFile audioFile;
 
     public StreamPlayer(AudioFile audioFile) {
@@ -24,9 +24,9 @@ public class StreamPlayer {
     }
 
     public void play() throws LineUnavailableException, IOException {
-        AudioInputStream din = audioFile.decodedInputStream;
+        AudioInputStream din = audioFile.getBaseInputStream();
         byte[] data = new byte[4096];
-        SourceDataLine line = getLine(audioFile.getDecodedFormat());
+        SourceDataLine line = getLine(audioFile.getBaseFormat());
 
         if (line != null) {
             line.start();
