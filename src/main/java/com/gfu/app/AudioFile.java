@@ -16,6 +16,8 @@ public class AudioFile {
 
     private byte[] byteBuffer;
 
+    private byte[] byteBufferEQ = byteBuffer;
+
     private double[] doubleBuffer;
 
     public AudioFile(String filepath) throws IOException, UnsupportedAudioFileException, URISyntaxException {
@@ -79,11 +81,16 @@ public class AudioFile {
             doubleBuffer[dBufferIndex++] = getNormalizedFloat64(tempBuffer, sampleSizeInBytes, isSigned);
 
             if (i > 100000 && i < 101000) {
+                System.out.println(((tempBuffer[1]) << 8) | (tempBuffer[0]));
                 System.out.println("Double Val: " + doubleBuffer[dBufferIndex - 1]);
             }
         }
 
         System.out.println("done!");
+    }
+
+    private void convertDoublesToBytes() {
+
     }
 
     private static double getNormalizedFloat64(byte[] bytes, int sampleSizeInBytes, boolean signed) {
@@ -95,38 +102,41 @@ public class AudioFile {
                 normalizedValue = (double) bytes[0] / 255;
                 break;
             case 2:
-                baseValue = (double)(((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff));
                 if (signed) {
+                    baseValue = (double)(((bytes[1]) << 8) | (bytes[0]));
                     if (baseValue < 0) {
                         normalizedValue = baseValue / 32768;
                     } else {
                         normalizedValue = baseValue / 32767;
                     }
                 } else {
+                    baseValue = (double)(((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff));
                     normalizedValue = baseValue / 65536;
                 }
                 break;
             case 3:
-                baseValue = (double)(((bytes[0] & 0xff) << 16) | ((bytes[1] & 0xff) << 8) | (bytes[2] & 0xff));
                 if (signed) {
+                    baseValue = (double)(((bytes[0]) << 16) | ((bytes[1]) << 8) | (bytes[2]));
                     if (baseValue < 0) {
                         normalizedValue = baseValue / 8388608;
                     } else {
                         normalizedValue = baseValue / 8388607;
                     }
                 } else {
+                    baseValue = (double)(((bytes[0] & 0xFF) << 16) | ((bytes[1] & 0xFF) << 8) | (bytes[2]) & 0xFF);
                     normalizedValue = baseValue / 16777215;
                 }
                 break;
             case 4:
-                baseValue = (double)(((bytes[0] & 0xff) << 24) | ((bytes[1] & 0xff) << 16) | ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff));
                 if (signed) {
+                    baseValue = (double)(((bytes[0]) << 24) | ((bytes[1]) << 16) | ((bytes[2]) << 8) | (bytes[3]));
                     if (baseValue < 0) {
                         normalizedValue = baseValue / 2147423648;
                     } else {
                         normalizedValue = baseValue / 2147423647;
                     }
                 } else {
+                    baseValue = (double)(((bytes[0] & 0xff) << 24) | ((bytes[1] & 0xff) << 16) | ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff));
                     normalizedValue = baseValue / 2147423647 / 2;
                 }
                 break;
@@ -141,5 +151,9 @@ public class AudioFile {
 
     public AudioFormat getBaseFormat() {
         return baseFormat;
+    }
+
+    public byte[] getByteBufferEQ() {
+        return byteBufferEQ;
     }
 }

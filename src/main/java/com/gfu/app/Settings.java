@@ -16,4 +16,7 @@ public class Settings {
     // Visualizer
     public static int VISUALIZER_FPS = 10;
     public static int SMOOTH_SHRINK_MILLIS = 2000;
+    
+    // Equalizer
+    public static boolean EQUALIZER_ENABLED = false;
 }
