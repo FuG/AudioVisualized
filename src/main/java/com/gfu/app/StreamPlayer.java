@@ -18,13 +18,18 @@ public class StreamPlayer implements Runnable {
 
     public void run() {
         try {
-            play();
+            System.out.println("Type: " + audioFile.getBaseFormat().getEncoding());
+            if (Settings.EQUALIZER_ENABLED) {
+                playFromByteBuffer();
+            } else {
+                playFromFile();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void play() throws LineUnavailableException, IOException, UnsupportedAudioFileException {
+    public void playFromFile() throws LineUnavailableException, IOException, UnsupportedAudioFileException {
         AudioInputStream din = audioFile.getBaseInputStream();
         byte[] data = new byte[4096];
         SourceDataLine line = getLine(audioFile.getBaseFormat());
@@ -39,6 +44,22 @@ public class StreamPlayer implements Runnable {
                     line.write(data, 0, nBytesRead);
                 }
             }
+
+            line.drain();
+            line.stop();
+            line.close();
+        }
+    }
+
+    public void playFromByteBuffer() throws LineUnavailableException, IOException, UnsupportedAudioFileException {
+        AudioInputStream din = audioFile.getBaseInputStream();
+        byte[] byteBuffer = audioFile.getByteBufferEQ();
+        SourceDataLine line = getLine(din.getFormat());
+
+        if (line != null) {
+            line.start();
+
+            line.write(byteBuffer, 0, byteBuffer.length);
 
             line.drain();
             line.stop();
