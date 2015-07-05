@@ -6,14 +6,16 @@ public class FrameRegulator {
     private double millisBetweenFrames;
     private long frameStartMillis;
 
+    int framesBeforeRealUpdate = 0;
+
     public FrameRegulator() {
         desiredFPS = 60;
-        millisBetweenFrames = 1.0 / desiredFPS;
+        millisBetweenFrames = 1.0 / desiredFPS * 1000;
     }
 
     public FrameRegulator(int fps) {
         desiredFPS = fps;
-        millisBetweenFrames = 1.0 / desiredFPS;
+        millisBetweenFrames = 1.0 / desiredFPS * 1000;
     }
 
     public void start() {
@@ -27,5 +29,16 @@ public class FrameRegulator {
         if (timeDelta > 0) {
             Thread.sleep(timeDelta);
         }
+    }
+
+    public boolean hasNextUpdate() {
+        boolean hasUpdate = false;
+
+        if (framesBeforeRealUpdate == 0) {
+            hasUpdate = true;
+            framesBeforeRealUpdate = Settings.FRAMES_BETWEEN_REAL_UPDATE;
+        }
+        framesBeforeRealUpdate--;
+        return hasUpdate;
     }
 }

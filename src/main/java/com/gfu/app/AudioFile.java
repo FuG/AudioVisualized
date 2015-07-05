@@ -8,6 +8,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 
 public class AudioFile {
     private static File file;
@@ -16,9 +19,12 @@ public class AudioFile {
 
     private byte[] byteBuffer;
 
-    private byte[] byteBufferEQ = byteBuffer;
+    public byte[] byteBufferEQ = byteBuffer;
 
-    private double[] doubleBuffer;
+    public double[] doubleBuffer;
+
+    private List<double[]> freqSamples;
+    private ListIterator<double[]> freqSamplesIter;
 
     public AudioFile(String filepath) throws IOException, UnsupportedAudioFileException, URISyntaxException {
         ClassLoader classLoader = getClass().getClassLoader();
@@ -27,12 +33,58 @@ public class AudioFile {
         init();
         loadByteBuffer();
         loadNormalizedDoubleBuffer();
+        loadFreqSamplesList();
+    }
+
+    private void loadFreqSamplesList() {
+        int sampleCount = doubleBuffer.length / Settings.INPUT_BUFFER_SIZE;// + 1;
+        int lastSampleLength = doubleBuffer.length % Settings.INPUT_BUFFER_SIZE;
+        freqSamples = new ArrayList<>();
+
+        for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
+            double[] sample = new double[Settings.INPUT_BUFFER_SIZE];
+
+            if (sampleIndex == sampleCount - 1) {
+                for (int bufferIndex = 0; bufferIndex < lastSampleLength; bufferIndex++) {
+                    sample[bufferIndex] = doubleBuffer[sampleIndex * Settings.INPUT_BUFFER_SIZE + bufferIndex];
+                }
+            } else {
+                for (int bufferIndex = 0; bufferIndex < Settings.INPUT_BUFFER_SIZE; bufferIndex++) {
+                    sample[bufferIndex] = doubleBuffer[sampleIndex * Settings.INPUT_BUFFER_SIZE + bufferIndex];
+                }
+            }
+
+            freqSamples.add(sample);
+        }
+
+        freqSamplesIter = freqSamples.listIterator();
+    }
+
+    public double[] nextSample() {
+        if (freqSamplesIter.hasNext()) {
+            return freqSamplesIter.next();
+        }
+
+        return null;
     }
 
     private void init() throws IOException, UnsupportedAudioFileException {
         baseFormat = AudioSystem.getAudioInputStream(file).getFormat();
     }
 
+    public AudioInputStream getAudioInputStream() throws IOException, UnsupportedAudioFileException {
+        return AudioSystem.getAudioInputStream(file);
+    }
+
+    public int getBytesPerSample() {
+        return baseFormat.getSampleSizeInBits() / 8;
+    }
+
+    public boolean encodingIsSigned() {
+        return baseFormat.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED) ? true : false;
+    }
+
+    /* TODO: remove (deprecated) */
     private void loadByteBuffer() throws IOException, UnsupportedAudioFileException {
         AudioInputStream inputStream = AudioSystem.getAudioInputStream(file);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -44,15 +96,16 @@ public class AudioFile {
             if (nBytesRead != -1) {
                 out.write(data, 0, nBytesRead);
             }
-
         }
 
         byteBuffer = out.toByteArray();
     }
 
+    /* TODO: remove (deprecated) */
     private void loadNormalizedDoubleBuffer() {
         int sampleSizeInBytes = baseFormat.getSampleSizeInBits() / 8;
         int frameSize = baseFormat.getFrameSize();// currently only works for single channel audio
+        boolean isSigned = baseFormat.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED) ? true : false;
 
         doubleBuffer = new double[byteBuffer.length / sampleSizeInBytes];
 
@@ -60,8 +113,8 @@ public class AudioFile {
         for (int i = 0; i < byteBuffer.length; i += frameSize) {
             // TODO: add multi-channel support
 
-            if (i > 100000 && i < 101000) { // TODO: clean this shit up
-                System.out.println();
+            if (i > 100000 && i < 101000) { // TODO: clean this up
+//                AppletMain.println();
             }
             byte[] tempBuffer = new byte[8 /* byte size of double */];
             int j;
@@ -69,7 +122,7 @@ public class AudioFile {
             for (j = 0; j < frameSize; j++) {
                 tempBuffer[j] = byteBuffer[i + j];
                 if (i > 100000 && i < 101000) {
-                    System.out.println("Byte[" + j + "]: " + tempBuffer[j]);
+//                    AppletMain.println("Byte[" + j + "]: " + tempBuffer[j]);
                 }
             }
             // pad with 0s
@@ -77,23 +130,19 @@ public class AudioFile {
                 tempBuffer[j] = 0;
             }
             // normalize the double value and store it
-            boolean isSigned = baseFormat.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED) ? true : false;
-            doubleBuffer[dBufferIndex++] = getNormalizedFloat64(tempBuffer, sampleSizeInBytes, isSigned);
-
             if (i > 100000 && i < 101000) {
-                System.out.println(((tempBuffer[1]) << 8) | (tempBuffer[0]));
-                System.out.println("Double Val: " + doubleBuffer[dBufferIndex - 1]);
+                doubleBuffer[dBufferIndex++] = getNormalizedFloat64(tempBuffer, sampleSizeInBytes, isSigned, true);
+            } else {
+                doubleBuffer[dBufferIndex++] = getNormalizedFloat64(tempBuffer, sampleSizeInBytes, isSigned, false);
             }
+
         }
 
-        System.out.println("done!");
+//        AppletMain.println("done!");
     }
 
-    private void convertDoublesToBytes() {
-
-    }
-
-    private static double getNormalizedFloat64(byte[] bytes, int sampleSizeInBytes, boolean signed) {
+    /* TODO: remove (deprecated) */
+    public static double getNormalizedFloat64(byte[] bytes, int sampleSizeInBytes, boolean signed, boolean print) {
         double baseValue, normalizedValue = 0;
         // TODO: fix unsigned/signed bit parsing
 
@@ -103,11 +152,15 @@ public class AudioFile {
                 break;
             case 2:
                 if (signed) {
-                    baseValue = (double)(((bytes[1]) << 8) | (bytes[0]));
+                    baseValue = (double)(((bytes[0]) << 8) | (bytes[1]));
                     if (baseValue < 0) {
                         normalizedValue = baseValue / 32768;
                     } else {
                         normalizedValue = baseValue / 32767;
+                    }
+                    if (print) {
+//                        AppletMain.println("Base: " + baseValue);
+//                        AppletMain.println("Norm: " + normalizedValue);
                     }
                 } else {
                     baseValue = (double)(((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff));

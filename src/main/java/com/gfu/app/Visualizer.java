@@ -1,13 +1,14 @@
 package com.gfu.app;
 
 import java.awt.*;
+import java.awt.image.ImageObserver;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Visualizer {
-    List<VisualCollection> visuals;
+    public List<VisualCollection> visuals;
     Image backBuffer;
     Graphics backGraphics;
 
@@ -19,6 +20,8 @@ public class Visualizer {
         backGraphics.setColor(Color.BLACK);
 
         initRenderHints(backGraphics);
+
+        visuals.add(new VisualCollection());
     }
 
     private void initRenderHints(Graphics g) {
@@ -33,5 +36,34 @@ public class Visualizer {
         renderingHintsMap.put(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
         g2.setRenderingHints(renderingHintsMap);
+    }
+
+    public void update() {
+        for (VisualCollection vc : visuals) {
+            vc.update();
+        }
+    }
+
+    public void update(double[] normFreqSpectrum) {
+        for (VisualCollection vc : visuals) {
+            vc.update(normFreqSpectrum);
+        }
+    }
+
+    public void draw(Graphics g, ImageObserver observer) {
+        resetBackground();
+
+        for (VisualCollection vc : visuals) {
+            vc.draw(backGraphics);
+        }
+
+        g.drawImage(backBuffer, 0, 0, observer);
+    }
+
+    private void resetBackground() {
+        backGraphics.setColor(Color.BLACK);
+        backGraphics.fillRect(0, 0, Settings.APPLET_WIDTH, Settings.APPLET_HEIGHT);
+        backGraphics.setColor(Color.WHITE);
+        backGraphics.drawLine(0, Settings.APPLET_HEIGHT / 2, Settings.APPLET_WIDTH - 1, Settings.APPLET_HEIGHT / 2);
     }
 }

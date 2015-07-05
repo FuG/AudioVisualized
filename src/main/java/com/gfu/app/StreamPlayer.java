@@ -18,7 +18,7 @@ public class StreamPlayer implements Runnable {
 
     public void run() {
         try {
-            System.out.println("Type: " + audioFile.getBaseFormat().getEncoding());
+            AppletMain.println("Type: " + audioFile.getBaseFormat().getEncoding());
             if (Settings.EQUALIZER_ENABLED) {
                 playFromByteBuffer();
             } else {
