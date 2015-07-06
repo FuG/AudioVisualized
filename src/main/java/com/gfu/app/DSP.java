@@ -59,33 +59,27 @@ public class DSP {
     }
 
     public void applyEQ() {
-        ListIterator<FFTData> iter = fftDataList.listIterator();
-
-        for (int i = 0; i < 200; i++) {
-            FFTData fftData = iter.next();
-//            fftData.magnitude *= 1.2; // +20% in the low-bass range
-            fftData.complex = fftData.backToComplex();
+        for (int i = 0; i < complexResults.length; i++) {
+            complexResults[i] = complexResults[i].multiply(0.1);
         }
     }
 
     public double[] inverseTransform() {
-        Complex[] complexes = new Complex[fftDataList.size()];
-
-        int i = 0;
-        for (FFTData d : fftDataList) {
-            complexes[i++] = d.complex;
-//            AppletMain.println("real: " + complexes[i-1].getReal() + "         img: " + complexes[i - 1].getImaginary() + "          abs: " + complexes[i-1].abs() + "          arg: " + complexes[i-1].getArgument());
-        }
-
-//        FastFourierTransformer transformer = new FastFourierTransformer(DftNormalization.STANDARD);
+//        Complex[] complexes = new Complex[fftDataList.size()];
+//
+//        int i = 0;
+//        for (FFTData d : fftDataList) {
+//            complexes[i++] = d.complex;
+////            AppletMain.println("real: " + complexes[i-1].getReal() + "         img: " + complexes[i - 1].getImaginary() + "          abs: " + complexes[i-1].abs() + "          arg: " + complexes[i-1].getArgument());
+//        }
 
         double[] tempConversion = null;
         try {
-            Complex[] results = transformer.transform(complexes, TransformType.INVERSE); // TODO: why is this not working???
+            Complex[] results = transformer.transform(complexResults, TransformType.INVERSE); // TODO: why is this not working???
             tempConversion = new double[results.length];
             for (int j = 0; j < results.length; j++) {
 
-                tempConversion[j] = results[j].abs();
+                tempConversion[j] = results[j].getReal();
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -108,7 +102,7 @@ public class DSP {
     }
 
     public double[] transform(double[] input) {
-        int paddedLength = 8192;
+        int paddedLength = 262144;
         double[] paddedInput = new double[paddedLength];
 
         for (int i = 0; i < input.length; i++) {
@@ -123,6 +117,10 @@ public class DSP {
 
             for (int i = 0; i < complexResults.length; i++) {
                 tempConversion[i] = complexResults[i].abs();
+
+                if (tempConversion[i] > 0.1) {
+                    System.out.println("(" + i + "): " + tempConversion[i]);
+                }
             }
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
