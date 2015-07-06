@@ -26,7 +26,8 @@ public class AudioDataMediator {
             e.printStackTrace();
         }
 
-        addReverb(0.5, 15000, audioFile.getBytesPerSample());
+//        addReverb(0.5, 15000, audioFile.getBytesPerSample());
+        outputByteArray = generateSineWave(441, inputNormalizedArray.length);
     }
 
     private void loadInputByteArray() throws IOException, UnsupportedAudioFileException {
@@ -204,5 +205,17 @@ public class AudioDataMediator {
         }
 
         outputByteArray = doublesToBytes(reverbNormalArray, bytesPerDouble);
+    }
+
+    private static byte[] generateSineWave(int frequency, int totalFrames) {
+        double[] sineWaveArray = new double[totalFrames]; // 16-bit audio
+        double samplingInterval = 44100.0 / frequency;
+
+        for (int i = 0; i < sineWaveArray.length; i++) {
+            double angle = (2.0 * Math.PI * i) / samplingInterval;
+            sineWaveArray[i] = Math.sin(angle);
+        }
+
+        return doublesToBytes(sineWaveArray, 2);
     }
 }
