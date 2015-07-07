@@ -59,10 +59,25 @@ public class DSP {
     }
 
     public void applyEQ() {
-        for (int i = 0; i < complexResults.length; i++) {
-            complexResults[i] = complexResults[i].multiply(0.1);
+//        double[] eqSpec = AudioDataMediator.generateCosineWave(440, 440 / 4);
+
+        for (int i = 1; i < complexResults.length; i++) {
+            complexResults[i] = complexResults[i].multiply(1);
         }
     }
+
+//    private byte[] generateEQSpectrum(int frequency, int totalFrames) {
+//        double[] sineWaveArray = new double[totalFrames]; // 16-bit audio
+//        double samplingInterval = 44100.0 / frequency;
+//
+//        for (int i = 0; i < sineWaveArray.length; i++) {
+//            double angle = (2.0 * Math.PI * i) / samplingInterval;
+//            sineWaveArray[i] = Math.cos(angle);
+//        }
+//
+//        inputNormalizedArray = sineWaveArray;
+//        return doublesToBytes(sineWaveArray, 2);
+//    }
 
     public double[] inverseTransform() {
 //        Complex[] complexes = new Complex[fftDataList.size()];
@@ -102,10 +117,11 @@ public class DSP {
     }
 
     public double[] transform(double[] input) {
-        int paddedLength = 262144;
+//        int paddedLength = 262144;
+        int paddedLength = (int) Math.pow(2, 17);
         double[] paddedInput = new double[paddedLength];
 
-        for (int i = 0; i < input.length; i++) {
+        for (int i = 0; i < (input.length < paddedLength ? input.length : paddedLength); i++) {
             paddedInput[i] = input[i];
         }
         double[] tempConversion = new double[paddedLength];
@@ -118,7 +134,7 @@ public class DSP {
             for (int i = 0; i < complexResults.length; i++) {
                 tempConversion[i] = complexResults[i].abs();
 
-                if (tempConversion[i] > 0.1) {
+                if (i < 100) {
                     System.out.println("(" + i + "): " + tempConversion[i]);
                 }
             }
