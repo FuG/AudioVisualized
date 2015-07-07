@@ -58,26 +58,30 @@ public class DSP {
 //        }
     }
 
-    public void applyEQ() {
-//        double[] eqSpec = AudioDataMediator.generateCosineWave(440, 440 / 4);
+    public void applyEQ() { // 297 (bin center for 100hz)
+        double[] eqSpec = generateEQSpectrum(4410, 44100);
 
-        for (int i = 1; i < complexResults.length; i++) {
-            complexResults[i] = complexResults[i].multiply(1);
+        for (int i = 0; i < eqSpec.length; i++) {
+            System.out.println("(" + i + "): " + eqSpec[i]);
+        }
+
+        for (int i = 0; i < eqSpec.length; i++) {
+            complexResults[i + 292] = complexResults[i + 292].multiply(eqSpec[i] + 1);
         }
     }
 
-//    private byte[] generateEQSpectrum(int frequency, int totalFrames) {
-//        double[] sineWaveArray = new double[totalFrames]; // 16-bit audio
-//        double samplingInterval = 44100.0 / frequency;
-//
-//        for (int i = 0; i < sineWaveArray.length; i++) {
-//            double angle = (2.0 * Math.PI * i) / samplingInterval;
-//            sineWaveArray[i] = Math.cos(angle);
-//        }
-//
-//        inputNormalizedArray = sineWaveArray;
-//        return doublesToBytes(sineWaveArray, 2);
-//    }
+    private double[] generateEQSpectrum(double frequency, double sampleRate) {
+        double samplingInterval = sampleRate / frequency;
+        double[] sineWaveArray = new double[(int) (samplingInterval)]; // 16-bit audio
+
+        for (int i = 0; i < samplingInterval; i++) {
+            double angle = (2.0 * Math.PI * i) / samplingInterval - (Math.PI / 2);
+            sineWaveArray[i] = (Math.sin(angle) + 1) / 2;
+        }
+
+
+        return sineWaveArray;
+    }
 
     public double[] inverseTransform() {
 //        Complex[] complexes = new Complex[fftDataList.size()];
@@ -134,7 +138,7 @@ public class DSP {
             for (int i = 0; i < complexResults.length; i++) {
                 tempConversion[i] = complexResults[i].abs();
 
-                if (i < 100) {
+                if (i < 1000) {
                     System.out.println("(" + i + "): " + tempConversion[i]);
                 }
             }

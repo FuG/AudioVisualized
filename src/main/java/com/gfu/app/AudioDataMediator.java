@@ -35,11 +35,12 @@ public class AudioDataMediator {
 
         int totalFrames = 262144; // ~5.94 seconds
 //        int totalFrames = 44100; // 1 second
+        double sampleRate = 44100;
         List<double[]> sineWaves = new ArrayList<>();
-        double[] control = generateSineWave(20, totalFrames);
+        double[] control = generateSineWave(100, sampleRate, totalFrames);
         sineWaves.add(control);
-        sineWaves.add(generateSineWave(523.25, totalFrames));
-        sineWaves.add(generateSineWave(659.25, totalFrames));
+        sineWaves.add(generateSineWave(523.25, sampleRate, totalFrames));
+        sineWaves.add(generateSineWave(659.25, sampleRate, totalFrames));
 //        inputNormalizedArray = mixChannels(sineWaves);
         inputNormalizedArray = control;
 
@@ -48,11 +49,11 @@ public class AudioDataMediator {
         dsp.applyEQ();
         double[] processedOutput = dsp.inverseTransform();
 
-        int i = 0;
-        for (double d : processedOutput) {
-            if (i++ < 1000)
-            System.out.println(d);
-        }
+//        int i = 0;
+//        for (double d : processedOutput) {
+//            if (i++ < 1000)
+//            System.out.println(d);
+//        }
 
         outputByteArray = doublesToBytes(processedOutput, 2);
 
@@ -238,28 +239,28 @@ public class AudioDataMediator {
         outputByteArray = doublesToBytes(reverbNormalArray, bytesPerDouble);
     }
 
-    public static double[] generateSineWave(double frequency, int totalFrames) {
+    public static double[] generateSineWave(double frequency, double sampleRate, int totalFrames) {
         double[] sineWaveArray = new double[totalFrames]; // 16-bit audio
-        double samplingInterval = 44100.0 / frequency;
+        double samplingInterval = sampleRate / frequency;
 
         for (int i = 0; i < sineWaveArray.length; i++) {
             double angle = (2.0 * Math.PI * i) / samplingInterval;
-            sineWaveArray[i] = Math.sin(angle);
+            sineWaveArray[i] = Math.sin(angle) / 2; // 2 for testing eq boost
         }
 
         return sineWaveArray;
     }
 
-    public static double[] generateCosineWave(double frequency, int totalFrames) {
-        double[] sineWaveArray = new double[totalFrames]; // 16-bit audio
-        double samplingInterval = 44100.0 / frequency;
+    public static double[] generateCosineWave(double frequency, double sampleRate, int totalFrames) {
+        double[] cosineWaveArray = new double[totalFrames]; // 16-bit audio
+        double samplingInterval = sampleRate / frequency;
 
-        for (int i = 0; i < sineWaveArray.length; i++) {
+        for (int i = 0; i < cosineWaveArray.length; i++) {
             double angle = (2.0 * Math.PI * i) / samplingInterval;
-            sineWaveArray[i] = Math.cos(angle);
+            cosineWaveArray[i] = Math.cos(angle);
         }
 
-        return sineWaveArray;
+        return cosineWaveArray;
     }
 
     private double[] mixChannels(List<double[]> inputs) {
