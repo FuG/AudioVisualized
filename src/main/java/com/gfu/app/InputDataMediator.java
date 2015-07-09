@@ -25,7 +25,7 @@ public class InputDataMediator implements Runnable {
                     // enqueue sample
                     putSample(inputSample);
                 } else {
-                    // no more samples from audioFile, so we sleep until queues are drained
+                    // no more samples from audioFile, so we sleep
                     Thread.sleep(10);
                 }
             }

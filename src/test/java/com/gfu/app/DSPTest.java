@@ -1,10 +1,10 @@
 package com.gfu.app;
 
-// TODO: fix org.junit import problem
+import org.junit.Test;
 
 public class DSPTest {
-//    @Test
-//    public void test1() {
-//
-//    }
+    @Test
+    public void test() {
+
+    }
 }
