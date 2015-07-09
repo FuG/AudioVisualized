@@ -22,6 +22,7 @@ public class AudioFile {
     public byte[] byteBufferEQ = byteBuffer;
 
     public double[] doubleBuffer;
+    private int dBufferIndex;
 
     private List<double[]> freqSamples;
     private ListIterator<double[]> freqSamplesIter;
@@ -36,6 +37,7 @@ public class AudioFile {
         loadFreqSamplesList();
 
         printFormatInfo();
+        dBufferIndex = 0;
     }
 
     private void loadFreqSamplesList() {
@@ -63,11 +65,19 @@ public class AudioFile {
     }
 
     public double[] nextSample() {
-        if (freqSamplesIter.hasNext()) {
-            return freqSamplesIter.next();
+        int remainingBins = doubleBuffer.length - dBufferIndex;
+
+        if (remainingBins <= 0) {
+            return null; // nothing left to copy
         }
 
-        return null;
+        int sampleSize = remainingBins > Settings.ENFORCED_SAMPLE_RATE ? Settings.ENFORCED_SAMPLE_RATE : remainingBins;
+        double[] sample = new double[65536]; // early padding to avoid an extra array copy later
+
+        System.arraycopy(doubleBuffer, dBufferIndex, sample, 0, sampleSize);
+        dBufferIndex += sampleSize;
+
+        return sample;
     }
 
     private void init() throws IOException, UnsupportedAudioFileException {
