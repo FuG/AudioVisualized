@@ -59,28 +59,31 @@ public class DSP {
     }
 
     public void applyEQ() { // 297 (bin center for 100hz)
-        double[] eqSpec = generateEQSpectrum(4410, 44100);
+        double[] eqSpec = generateSingleFrequencyEQSpectrum(3136, 44100, 65536);
 
         for (int i = 0; i < eqSpec.length; i++) {
-            System.out.println("(" + i + "): " + eqSpec[i]);
-        }
-
-        for (int i = 0; i < eqSpec.length; i++) {
-            complexResults[i + 292] = complexResults[i + 292].multiply(eqSpec[i] + 1);
+            if (eqSpec[i] != 0) {
+                complexResults[i] = complexResults[i].multiply(1 + eqSpec[i]);
+            }
         }
     }
 
-    private double[] generateEQSpectrum(double frequency, double sampleRate) {
-        double samplingInterval = sampleRate / frequency;
-        double[] sineWaveArray = new double[(int) (samplingInterval)]; // 16-bit audio
+    private double[] generateSingleFrequencyEQSpectrum(double boostFrequency, double sampleRate, int sampleSize) {
+        double[] eqSpectrum = new double[sampleSize];
+        double hertzPerBin = sampleRate / sampleSize;
+        double samplingInterval = Math.sqrt(boostFrequency);
 
         for (int i = 0; i < samplingInterval; i++) {
+            int frontBinIndex = (int) (boostFrequency / hertzPerBin + i - (samplingInterval / 2 ));
+            int backBinIndex = sampleSize - frontBinIndex;
             double angle = (2.0 * Math.PI * i) / samplingInterval - (Math.PI / 2);
-            sineWaveArray[i] = (Math.sin(angle) + 1) / 2;
+            double boostValue = (Math.sin(angle) + 1) / 2; // always between 0.0 and 1.0
+            eqSpectrum[frontBinIndex] = boostValue;
+            eqSpectrum[backBinIndex] = boostValue;
         }
 
-
-        return sineWaveArray;
+        Util.printArrayToFile(eqSpectrum, "eqSpectrum.csv");
+        return eqSpectrum;
     }
 
     public double[] inverseTransform() {
@@ -115,37 +118,31 @@ public class DSP {
         return null;
     }
 
-    private double[] decodeToDoubles(AudioInputStream inputStream) {
-        // TODO: not needed, done in AudioFile.java
-        return null;
-    }
-
     public double[] transform(double[] input) {
-//        int paddedLength = 262144;
-        int paddedLength = (int) Math.pow(2, 17);
+        int paddedLength = 65536;
         double[] paddedInput = new double[paddedLength];
 
         for (int i = 0; i < (input.length < paddedLength ? input.length : paddedLength); i++) {
             paddedInput[i] = input[i];
         }
         double[] tempConversion = new double[paddedLength];
-//        double[] tempConversion = new double[input.length];
 
         try {
             complexResults = transformer.transform(paddedInput, TransformType.FORWARD);
-//            complexResults = transformer.transform(input, TransformType.FORWARD);
 
             for (int i = 0; i < complexResults.length; i++) {
                 tempConversion[i] = complexResults[i].abs();
 
-                if (i < 1000) {
-                    System.out.println("(" + i + "): " + tempConversion[i]);
-                }
+//                if (i < 100 || i > (paddedLength - 100) || (i > paddedLength / 2 - 10 && i < paddedLength / 2 + 10)) {
+//                if (i < 1000) {
+//                    System.out.println("(" + i + "): " + tempConversion[i]);
+//                }
             }
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
 
+        Util.printArrayToFile(tempConversion, "transformed.csv");
         return tempConversion;
     }
 }

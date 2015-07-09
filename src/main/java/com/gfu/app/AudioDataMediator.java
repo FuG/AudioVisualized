@@ -16,6 +16,8 @@ public class AudioDataMediator {
     private double[] inputNormalizedArray;
     private double[] outputNormalizedArray;
 
+    public static int frequency = 200;
+
     // TODO: implement asynchronous pipes
 
     public AudioDataMediator(AudioFile audioFile) {
@@ -33,33 +35,32 @@ public class AudioDataMediator {
 //        inputNormalizedArray = generateSineWave(440, 262144);
 //        outputByteArray = doublesToBytes(inputNormalizedArray, 2);
 
-        int totalFrames = 262144; // ~5.94 seconds
-//        int totalFrames = 44100; // 1 second
+//        int totalFrames = 262144; // ~5.94 seconds
+        int totalFrames = 65536; // 1 second
         double sampleRate = 44100;
         List<double[]> sineWaves = new ArrayList<>();
-        double[] control = generateSineWave(100, sampleRate, totalFrames);
+        double[] control = generateSineWave(frequency, sampleRate, totalFrames);
         sineWaves.add(control);
         sineWaves.add(generateSineWave(523.25, sampleRate, totalFrames));
         sineWaves.add(generateSineWave(659.25, sampleRate, totalFrames));
-//        inputNormalizedArray = mixChannels(sineWaves);
-        inputNormalizedArray = control;
+        sineWaves.add(generateSineWave(3136.0, sampleRate, totalFrames));
+        inputNormalizedArray = mixChannels(sineWaves);
+//        inputNormalizedArray = control;
+        Util.printArrayToFile(inputNormalizedArray, "original.csv");
 
         DSP dsp = new DSP(audioFile);
         dsp.transform(inputNormalizedArray);
         dsp.applyEQ();
         double[] processedOutput = dsp.inverseTransform();
+        Util.printArrayToFile(processedOutput, "processed.csv");
 
 //        int i = 0;
 //        for (double d : processedOutput) {
 //            if (i++ < 1000)
-//            System.out.println(d);
+//            System.out.println("("+i+"): "+d);
 //        }
 
         outputByteArray = doublesToBytes(processedOutput, 2);
-
-        for (byte b : outputByteArray) {
-//            System.out.println(b);
-        }
     }
 
     private void loadInputByteArray() throws IOException, UnsupportedAudioFileException {
@@ -245,7 +246,7 @@ public class AudioDataMediator {
 
         for (int i = 0; i < sineWaveArray.length; i++) {
             double angle = (2.0 * Math.PI * i) / samplingInterval;
-            sineWaveArray[i] = Math.sin(angle) / 2; // 2 for testing eq boost
+            sineWaveArray[i] = Math.sin(angle) / 2.1; // 2 for testing eq boost
         }
 
         return sineWaveArray;
