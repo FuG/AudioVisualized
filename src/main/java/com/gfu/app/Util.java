@@ -20,4 +20,13 @@ public class Util {
         }
         writer.close();
     }
+
+    public static double[] copyArray(double[] array, int length, double volumeFactor) {
+        double[] newArray = new double[length];
+        for (int i = 0; i < length; i++) {
+            newArray[i] = array[i] * volumeFactor;
+        }
+
+        return newArray;
+    }
 }

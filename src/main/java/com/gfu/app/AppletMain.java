@@ -35,6 +35,7 @@ public class AppletMain extends Applet implements Runnable {
 
     @Override
     public void init() {
+        System.out.println("Loading...");
         setSize(Settings.APPLET_WIDTH, Settings.APPLET_HEIGHT);
 
 //        runSandbox();
@@ -101,6 +102,7 @@ public class AppletMain extends Applet implements Runnable {
     }
 
     public void run() {
+        System.out.println("Loading Complete!");
         frameRegulator.start();
         int i = 0;
         while (true) {

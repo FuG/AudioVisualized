@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class AudioDataMediator {
     private AudioFile audioFile;
@@ -17,24 +18,29 @@ public class AudioDataMediator {
     private double[] outputNormalizedArray;
 
     public static int frequency = 200;
+    public static int sampleCount = 524288 * 4;
+    public static double initialVolumeFactor = 0.5;
 
     // TODO: implement asynchronous pipes
+    private static ConcurrentLinkedQueue inputQueue;
+    private static ConcurrentLinkedQueue outputQueue;
+
+//    public AudioDataMediator(AudioFile audioFile) {
+//
+//    }
 
     public AudioDataMediator(AudioFile audioFile) {
         this.audioFile = audioFile;
 
-//        try {
-//            loadInputByteArray();
-//            loadNormalizedArray();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-//        addReverb(0.5, 15000, audioFile.getBytesPerSample());
-//
-//        inputNormalizedArray = generateSineWave(440, 262144);
+        try {
+            loadInputByteArray();
+            loadNormalizedArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 //        outputByteArray = doublesToBytes(inputNormalizedArray, 2);
 
+        double[] smallerArray = Util.copyArray(inputNormalizedArray, sampleCount, initialVolumeFactor * 0.99); // 0.99 to prevent EQ from going over 1.0 due to double-rounding
 //        int totalFrames = 262144; // ~5.94 seconds
         int totalFrames = 65536; // 1 second
         double sampleRate = 44100;
@@ -44,14 +50,15 @@ public class AudioDataMediator {
         sineWaves.add(generateSineWave(523.25, sampleRate, totalFrames));
         sineWaves.add(generateSineWave(659.25, sampleRate, totalFrames));
         sineWaves.add(generateSineWave(3136.0, sampleRate, totalFrames));
-        inputNormalizedArray = mixChannels(sineWaves);
+//        inputNormalizedArray = mixChannels(sineWaves);
 //        inputNormalizedArray = control;
         Util.printArrayToFile(inputNormalizedArray, "original.csv");
 
         DSP dsp = new DSP(audioFile);
-        dsp.transform(inputNormalizedArray);
+        dsp.transform(smallerArray);
+//        dsp.transform(inputNormalizedArray);
         dsp.applyEQ();
-        double[] processedOutput = dsp.inverseTransform();
+        double[] processedOutput = dsp.inverseTransform(null);
         Util.printArrayToFile(processedOutput, "processed.csv");
 
 //        int i = 0;

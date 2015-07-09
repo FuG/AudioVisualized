@@ -10,8 +10,10 @@ public class Settings {
     public static String RESOURCE_DIR = "";
     public static String THE_NEXT_EPISODE_8_BR = "the_next_episode_8.wav";
     public static String THE_NEXT_EPISODE_16_BR = "the_next_episode_16.wav";
-    public static String THE_NEXT_EPISODE_24_BR = "the_next_episode_24.wav"; // TODO: need to fix StreamPlayer for 24-bit
-    public static String AUDIO_FILE_PATH = RESOURCE_DIR + THE_NEXT_EPISODE_16_BR;
+    public static String THE_NEXT_EPISODE_24_BR = "the_next_episode_24.wav"; // TODO: need to fix StreamPlayer for 24-bit (on Windows)
+    public static String MIND_HEIST_16_BR = "mind_heist_16.wav";
+    public static String AUDIO_FILE_PATH = RESOURCE_DIR + MIND_HEIST_16_BR;
+//    public static String AUDIO_FILE_PATH = RESOURCE_DIR + THE_NEXT_EPISODE_16_BR;
     public static int ENFORCED_SAMPLE_RATE = 44100;
 
     // Visualizer

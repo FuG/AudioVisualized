@@ -59,7 +59,7 @@ public class DSP {
     }
 
     public void applyEQ() { // 297 (bin center for 100hz)
-        double[] eqSpec = generateSingleFrequencyEQSpectrum(3136, 44100, 65536);
+        double[] eqSpec = generateSingleFrequencyEQSpectrum(200, 44100, AudioDataMediator.sampleCount);
 
         for (int i = 0; i < eqSpec.length; i++) {
             if (eqSpec[i] != 0) {
@@ -71,13 +71,21 @@ public class DSP {
     private double[] generateSingleFrequencyEQSpectrum(double boostFrequency, double sampleRate, int sampleSize) {
         double[] eqSpectrum = new double[sampleSize];
         double hertzPerBin = sampleRate / sampleSize;
-        double samplingInterval = Math.sqrt(boostFrequency);
+        double samplingInterval = 500 * sampleSize / 44100;
+        double volumeAdjust = 1 / AudioDataMediator.initialVolumeFactor - 1;
+//        double samplingInterval = Math.sqrt(boostFrequency) * sampleSize / 44100;
 
         for (int i = 0; i < samplingInterval; i++) {
-            int frontBinIndex = (int) (boostFrequency / hertzPerBin + i - (samplingInterval / 2 ));
+//            int frontBinIndex = (int) (boostFrequency / hertzPerBin + i - (samplingInterval / 2 ));
+            int frontBinIndex = i + 1;
             int backBinIndex = sampleSize - frontBinIndex;
-            double angle = (2.0 * Math.PI * i) / samplingInterval - (Math.PI / 2);
-            double boostValue = (Math.sin(angle) + 1) / 2; // always between 0.0 and 1.0
+            double angle = (Math.PI * i) / samplingInterval + (Math.PI / 2);
+//            double angle = (2.0 * Math.PI * i) / samplingInterval - (Math.PI / 2);
+            double boostValue = ((Math.sin(angle) + 1) / 2) / volumeAdjust; // always between 0.0 and 1.0
+
+            if (boostValue > 1) {
+                System.out.println(boostValue);
+            }
             eqSpectrum[frontBinIndex] = boostValue;
             eqSpectrum[backBinIndex] = boostValue;
         }
@@ -86,18 +94,14 @@ public class DSP {
         return eqSpectrum;
     }
 
-    public double[] inverseTransform() {
-//        Complex[] complexes = new Complex[fftDataList.size()];
-//
-//        int i = 0;
-//        for (FFTData d : fftDataList) {
-//            complexes[i++] = d.complex;
-////            AppletMain.println("real: " + complexes[i-1].getReal() + "         img: " + complexes[i - 1].getImaginary() + "          abs: " + complexes[i-1].abs() + "          arg: " + complexes[i-1].getArgument());
-//        }
+    public double[] inverseTransform(Complex[] complexes) {
+        if (complexes == null) {
+            complexes = complexResults;
+        }
 
         double[] tempConversion = null;
         try {
-            Complex[] results = transformer.transform(complexResults, TransformType.INVERSE); // TODO: why is this not working???
+            Complex[] results = transformer.transform(complexes, TransformType.INVERSE);
             tempConversion = new double[results.length];
             for (int j = 0; j < results.length; j++) {
 
@@ -119,7 +123,8 @@ public class DSP {
     }
 
     public double[] transform(double[] input) {
-        int paddedLength = 65536;
+//        int paddedLength = 65536;
+        int paddedLength = AudioDataMediator.sampleCount;
         double[] paddedInput = new double[paddedLength];
 
         for (int i = 0; i < (input.length < paddedLength ? input.length : paddedLength); i++) {

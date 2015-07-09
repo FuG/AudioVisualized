@@ -34,6 +34,8 @@ public class AudioFile {
         loadByteBuffer();
         loadNormalizedDoubleBuffer();
         loadFreqSamplesList();
+
+        printFormatInfo();
     }
 
     private void loadFreqSamplesList() {
@@ -80,8 +82,42 @@ public class AudioFile {
         return baseFormat.getSampleSizeInBits() / 8;
     }
 
+    public AudioFormat.Encoding getEncoding() {
+        return baseFormat.getEncoding();
+    }
+
+    public int getChannels() {
+        return baseFormat.getChannels();
+    }
+
     public boolean encodingIsSigned() {
-        return baseFormat.getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED) ? true : false;
+        return getEncoding().equals(AudioFormat.Encoding.PCM_SIGNED) ? true : false;
+    }
+
+    public float getSampleRate() {
+        return baseFormat.getSampleRate();
+    }
+
+    private int getFrameSize() {
+        return baseFormat.getFrameSize();
+    }
+
+    private float getFrameRate() {
+        return baseFormat.getFrameRate();
+    }
+
+    private boolean isLittleEndian() {
+        return !baseFormat.isBigEndian();
+    }
+
+    public void printFormatInfo() {
+        System.out.println("\nChannels: " + getChannels());
+        System.out.println("Encoding: " + getEncoding());
+        System.out.println("Sample Size (bytes): " + getBytesPerSample());
+        System.out.println("Sample Rate: " + getSampleRate());
+        System.out.println("Frame Size: " + getFrameSize());
+        System.out.println("Frame Rate: " + getFrameRate());
+        System.out.println("Little Endian: " + isLittleEndian() + "\n");
     }
 
     /* TODO: remove (deprecated) */
