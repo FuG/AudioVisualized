@@ -59,6 +59,7 @@ public class DSP {
     }
 
     public void applyEQ() { // 297 (bin center for 100hz)
+        System.out.println("Applying EQ...");
         double[] eqSpec = generateSingleFrequencyEQSpectrum(200, 44100, AudioDataMediator.sampleCount);
 
         for (int i = 0; i < eqSpec.length; i++) {
@@ -71,7 +72,7 @@ public class DSP {
     private double[] generateSingleFrequencyEQSpectrum(double boostFrequency, double sampleRate, int sampleSize) {
         double[] eqSpectrum = new double[sampleSize];
         double hertzPerBin = sampleRate / sampleSize;
-        double samplingInterval = 500 * sampleSize / 44100;
+        double samplingInterval = 300 * sampleSize / 44100;
         double volumeAdjust = 1 / AudioDataMediator.initialVolumeFactor - 1;
 //        double samplingInterval = Math.sqrt(boostFrequency) * sampleSize / 44100;
 
@@ -83,9 +84,6 @@ public class DSP {
 //            double angle = (2.0 * Math.PI * i) / samplingInterval - (Math.PI / 2);
             double boostValue = ((Math.sin(angle) + 1) / 2) / volumeAdjust; // always between 0.0 and 1.0
 
-            if (boostValue > 1) {
-                System.out.println(boostValue);
-            }
             eqSpectrum[frontBinIndex] = boostValue;
             eqSpectrum[backBinIndex] = boostValue;
         }
